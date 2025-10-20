@@ -3,6 +3,10 @@ from sqlalchemy.orm import Session
 from insight_console.models.workflow import Workflow, WorkflowStatus, WorkflowType
 from insight_console.models.deal import Deal
 from insight_console.skills.competitive_analysis import CompetitiveAnalysisSkill
+from insight_console.skills.market_sizing import MarketSizingSkill
+from insight_console.skills.unit_economics import UnitEconomicsSkill
+from insight_console.skills.management_assessment import ManagementAssessmentSkill
+from insight_console.skills.financial_benchmarking import FinancialBenchmarkingSkill
 
 class WorkflowExecutor:
     """Service for executing analysis workflows"""
@@ -28,6 +32,14 @@ class WorkflowExecutor:
             # Execute appropriate skill based on workflow type
             if workflow.workflow_type == WorkflowType.COMPETITIVE_ANALYSIS:
                 result = self._execute_competitive_analysis(workflow, deal)
+            elif workflow.workflow_type == WorkflowType.MARKET_SIZING:
+                result = self._execute_market_sizing(workflow, deal)
+            elif workflow.workflow_type == WorkflowType.UNIT_ECONOMICS:
+                result = self._execute_unit_economics(workflow, deal)
+            elif workflow.workflow_type == WorkflowType.MANAGEMENT_ASSESSMENT:
+                result = self._execute_management_assessment(workflow, deal)
+            elif workflow.workflow_type == WorkflowType.FINANCIAL_BENCHMARKING:
+                result = self._execute_financial_benchmarking(workflow, deal)
             else:
                 raise NotImplementedError(f"Workflow type {workflow.workflow_type} not yet implemented")
 
@@ -66,6 +78,86 @@ class WorkflowExecutor:
 
         workflow.progress_percent = 80
         workflow.current_step = "Finalizing analysis"
+        self.db.commit()
+
+        return result
+
+    def _execute_market_sizing(self, workflow: Workflow, deal: Deal) -> dict:
+        """Execute market sizing skill"""
+        workflow.current_step = "Analyzing market size"
+        workflow.progress_percent = 20
+        self.db.commit()
+
+        skill = MarketSizingSkill()
+        result = skill.execute(
+            company_name=deal.target_company or deal.name,
+            sector=deal.sector or "Unknown",
+            key_questions=deal.key_questions or [],
+            context=""
+        )
+
+        workflow.progress_percent = 80
+        workflow.current_step = "Finalizing market analysis"
+        self.db.commit()
+
+        return result
+
+    def _execute_unit_economics(self, workflow: Workflow, deal: Deal) -> dict:
+        """Execute unit economics skill"""
+        workflow.current_step = "Analyzing unit economics"
+        workflow.progress_percent = 20
+        self.db.commit()
+
+        skill = UnitEconomicsSkill()
+        result = skill.execute(
+            company_name=deal.target_company or deal.name,
+            sector=deal.sector or "Unknown",
+            key_questions=deal.key_questions or [],
+            context=""
+        )
+
+        workflow.progress_percent = 80
+        workflow.current_step = "Finalizing economics analysis"
+        self.db.commit()
+
+        return result
+
+    def _execute_management_assessment(self, workflow: Workflow, deal: Deal) -> dict:
+        """Execute management assessment skill"""
+        workflow.current_step = "Assessing management team"
+        workflow.progress_percent = 20
+        self.db.commit()
+
+        skill = ManagementAssessmentSkill()
+        result = skill.execute(
+            company_name=deal.target_company or deal.name,
+            sector=deal.sector or "Unknown",
+            key_questions=deal.key_questions or [],
+            context=""
+        )
+
+        workflow.progress_percent = 80
+        workflow.current_step = "Finalizing management assessment"
+        self.db.commit()
+
+        return result
+
+    def _execute_financial_benchmarking(self, workflow: Workflow, deal: Deal) -> dict:
+        """Execute financial benchmarking skill"""
+        workflow.current_step = "Benchmarking financial metrics"
+        workflow.progress_percent = 20
+        self.db.commit()
+
+        skill = FinancialBenchmarkingSkill()
+        result = skill.execute(
+            company_name=deal.target_company or deal.name,
+            sector=deal.sector or "Unknown",
+            key_questions=deal.key_questions or [],
+            context=""
+        )
+
+        workflow.progress_percent = 80
+        workflow.current_step = "Finalizing benchmarking analysis"
         self.db.commit()
 
         return result

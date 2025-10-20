@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from .routers import deals
 
 app = FastAPI(
     title="Insight Console API",
@@ -15,6 +16,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(deals.router)
 
 @app.get("/health")
 async def health_check():

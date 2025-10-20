@@ -10,3 +10,5 @@ venv/
 htmlcov/
 dist/
 build/
+uploads/*
+!uploads/.gitkeep

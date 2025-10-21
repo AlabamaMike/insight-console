@@ -10,6 +10,7 @@ import { Env, UserContext } from '../types';
 import { authenticate } from '../middleware/auth';
 import { enforceDealAccess } from '../middleware/firmIsolation';
 import { CreateDealSchema, UpdateDealSchema, DealResponse } from '../schemas/deal';
+import { logDealCreation, logDealUpdate } from '../utils/audit';
 
 const deals = new Hono<{ Bindings: Env }>();
 
@@ -50,6 +51,9 @@ deals.post('/', authenticate, zValidator('json', CreateDealSchema), async (c) =>
     `;
 
     const deal = result[0] as DealResponse;
+
+    // Log deal creation to audit trail
+    await logDealCreation(c, deal.id, deal.name);
 
     return c.json(deal, 201);
   } catch (error) {
@@ -176,6 +180,9 @@ deals.put('/:id', authenticate, enforceDealAccess, zValidator('json', UpdateDeal
     }
 
     const deal = result[0] as DealResponse;
+
+    // Log deal update to audit trail
+    await logDealUpdate(c, deal.id, data);
 
     return c.json(deal);
   } catch (error) {

@@ -1,24 +1,26 @@
 import { Hono } from 'hono';
-import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { Env } from './types';
 import deals from './routes/deals';
+import documents from './routes/documents';
+import workflows from './routes/workflows';
+import { securityHeaders, configureCORS, requestId, sanitizeErrors } from './middleware/security';
 
 // Create Hono app with environment type
 const app = new Hono<{ Bindings: Env }>();
 
-// Middleware
+// Global middleware
 app.use('*', logger());
+app.use('*', requestId);
+app.use('*', securityHeaders);
 app.use(
   '*',
-  cors({
-    origin: ['https://dealinsights.ai', 'http://localhost:3000'],
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-    exposeHeaders: ['Content-Length'],
-    maxAge: 600,
-    credentials: true,
-  })
+  configureCORS([
+    'https://dealinsights.ai',
+    'https://www.dealinsights.ai',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ])
 );
 
 // Health check endpoint
@@ -41,8 +43,9 @@ app.get('/', (c) => {
 
 // API routes
 app.route('/api/deals', deals);
-// app.route('/api/documents', documentsRouter);
-// app.route('/api/workflows', workflowsRouter);
+app.route('/api/documents', documents);
+app.route('/api/deals', workflows); // Nested under /api/deals/:dealId/analysis
+app.route('/api/workflows', workflows); // Direct access for workflow details
 
 // 404 handler
 app.notFound((c) => {
@@ -52,10 +55,25 @@ app.notFound((c) => {
 // Error handler
 app.onError((err, c) => {
   console.error('Error:', err);
+
+  // Don't expose internal details in production
+  if (c.env.ENVIRONMENT === 'production') {
+    return c.json(
+      {
+        error: 'Internal Server Error',
+        request_id: c.get('requestId'),
+      },
+      500
+    );
+  }
+
+  // Development: provide more details
   return c.json(
     {
       error: 'Internal Server Error',
-      message: c.env.ENVIRONMENT === 'development' ? err.message : undefined,
+      message: err.message,
+      request_id: c.get('requestId'),
+      stack: err.stack,
     },
     500
   );

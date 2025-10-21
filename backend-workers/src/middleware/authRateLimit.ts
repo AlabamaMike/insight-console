@@ -16,7 +16,9 @@ const WINDOW_MINUTES = 60;
  * Limits to 3 requests per email per hour
  */
 export async function authRateLimit(c: Context<{ Bindings: Env }>, next: Next) {
-  const body = await c.req.json().catch(() => ({}));
+  // Clone the request to preserve body for downstream handlers
+  const clonedRequest = c.req.raw.clone();
+  const body = await clonedRequest.json().catch(() => ({}));
   const email = body.email?.toLowerCase();
 
   if (!email) {

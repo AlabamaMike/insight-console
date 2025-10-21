@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { uploadDocument, startAnalysis } from '@/lib/api'
 import type { Document } from '@/types'
 import { Upload, FileText, Play } from 'lucide-react'
-import { formatBytes } from 'date-fns'
 
 interface DocumentUploadProps {
   dealId: number

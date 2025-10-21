@@ -30,7 +30,7 @@ function VerifyContent() {
         saveUser(response.user);
 
         // Redirect to dashboard
-        router.push('/deals');
+        router.push('/');
       } catch (err: any) {
         if (err.response?.data?.error) {
           setError(err.response.data.error);

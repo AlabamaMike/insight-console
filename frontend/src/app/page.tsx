@@ -1,20 +1,29 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { getDeals } from '@/lib/api'
+import { isAuthenticated } from '@/lib/auth'
 import type { Deal } from '@/types'
 import DealList from '@/components/DealList'
 import CreateDealButton from '@/components/CreateDealButton'
 import { PlusCircle } from 'lucide-react'
 
 export default function Home() {
+  const router = useRouter()
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Check authentication
+    if (!isAuthenticated()) {
+      router.push('/auth/login')
+      return
+    }
+
     loadDeals()
-  }, [])
+  }, [router])
 
   const loadDeals = async () => {
     try {

@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import type { Deal, Document, Workflow, Synthesis } from '@/types'
 import { ApiError } from './errors'
+import { getAccessToken, clearAuth } from './auth'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787'
 
@@ -15,7 +16,7 @@ const api = axios.create({
 // Add auth token to requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth_token')
+    const token = getAccessToken()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -47,7 +48,7 @@ api.interceptors.response.use(
 
     // Handle auth errors by clearing token
     if (status === 401) {
-      localStorage.removeItem('auth_token')
+      clearAuth()
     }
 
     return Promise.reject(apiError)

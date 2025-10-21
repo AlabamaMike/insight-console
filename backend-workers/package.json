@@ -11,7 +11,10 @@
     "test:watch": "vitest --watch",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit",
-    "build": "tsc"
+    "build": "tsc",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:push": "drizzle-kit push:pg",
+    "db:studio": "drizzle-kit studio"
   },
   "keywords": [
     "cloudflare-workers",

@@ -71,19 +71,15 @@ npm install
 ### 2. Run Database Migrations
 
 ```bash
-cd backend
+cd backend-workers
 # Copy connection string to environment
 export DATABASE_URL="postgresql://user:pass@host/database"
 
-# Run migrations using Alembic
-alembic upgrade head
-```
+# Run migrations using drizzle-kit
+npm run db:push
 
-### 3. Create Audit Logs Table
-
-```bash
-# Run the audit logs migration
-psql $DATABASE_URL -f backend-workers/migrations/001_create_audit_logs.sql
+# Or manually run SQL migrations
+psql $DATABASE_URL -f migrations/001_create_audit_logs.sql
 ```
 
 ## Cloudflare Workers Backend
@@ -389,12 +385,14 @@ In Vercel Dashboard:
 ### Database Rollback
 
 ```bash
-# Rollback one migration
-cd backend
-alembic downgrade -1
+# Database rollback with Drizzle requires manual SQL execution
+# Review migration files and create a rollback script
 
-# Rollback to specific version
-alembic downgrade <revision>
+# Example: Rollback audit logs table
+psql $DATABASE_URL -c "DROP TABLE IF EXISTS audit_logs;"
+
+# For complex migrations, create a rollback SQL file
+psql $DATABASE_URL -f migrations/rollback_001.sql
 ```
 
 ## Performance Optimization

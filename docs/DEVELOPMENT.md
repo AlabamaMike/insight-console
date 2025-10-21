@@ -54,13 +54,16 @@ export DATABASE_URL="postgresql://user:pass@host/database"
 **Run Migrations**
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+cd backend-workers
 
-# Run Alembic migrations
-alembic upgrade head
+# Ensure DATABASE_URL is set
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/dealinsights"
+
+# Run migrations using drizzle-kit
+npm run db:push
+
+# Or manually run SQL migrations
+psql $DATABASE_URL -f migrations/001_create_audit_logs.sql
 ```
 
 ### 4. Environment Variables
@@ -169,19 +172,31 @@ npm run type-check
 **Create New Migration**
 
 ```bash
-cd backend
-alembic revision -m "description of changes"
+cd backend-workers
 
-# Edit the generated file in backend/alembic/versions/
-# Then apply it
-alembic upgrade head
+# Update schema in src/db/schema.ts first, then generate migration
+npm run db:generate
+
+# This creates a new SQL file in migrations/
+# Review the generated migration, then apply it
+npm run db:push
+
+# Or manually run the generated SQL file
+psql $DATABASE_URL -f migrations/0001_*.sql
 ```
 
 **Rollback Migration**
 
 ```bash
-alembic downgrade -1  # Rollback one migration
-alembic downgrade <revision>  # Rollback to specific version
+# Drizzle doesn't have automatic rollback
+# You'll need to manually create and run a rollback SQL script
+
+# Example: Review the migration to rollback
+cat migrations/0001_*.sql
+
+# Create a rollback script (manually reverse the operations)
+# Then run it
+psql $DATABASE_URL -f migrations/rollback_0001.sql
 ```
 
 ### Working with R2 Locally

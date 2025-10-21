@@ -13,10 +13,10 @@ r2_buckets = [
   { binding = "DOCUMENTS", bucket_name = "insight-console-docs-prod" }
 ]
 kv_namespaces = [
-  { binding = "SESSIONS", id = "your-kv-namespace-id" }
+  { binding = "SESSIONS", id = "9b8b82e5d34740c39cfd2449a23b431e" }
 ]
 hyperdrive = [
-  { binding = "DATABASE", id = "your-hyperdrive-id" }
+  { binding = "DATABASE", id = "5ef3d2b69f7543678d9a3d7df0808526" }
 ]
 
 # Secrets (configured via wrangler secret put)

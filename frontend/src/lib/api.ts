@@ -48,10 +48,6 @@ api.interceptors.response.use(
     // Handle auth errors by clearing token
     if (status === 401) {
       localStorage.removeItem('auth_token')
-      // Optionally redirect to login
-      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
     }
 
     return Promise.reject(apiError)

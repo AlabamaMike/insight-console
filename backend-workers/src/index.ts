@@ -4,6 +4,7 @@ import { Env } from './types';
 import deals from './routes/deals';
 import documents from './routes/documents';
 import workflows from './routes/workflows';
+import auth from './routes/auth';
 import { securityHeaders, configureCORS, requestId, sanitizeErrors } from './middleware/security';
 
 // Create Hono app with environment type
@@ -46,6 +47,7 @@ app.route('/api/deals', deals);
 app.route('/api/documents', documents);
 app.route('/api/deals', workflows); // Nested under /api/deals/:dealId/analysis
 app.route('/api/workflows', workflows); // Direct access for workflow details
+app.route('/auth', auth);
 
 // 404 handler
 app.notFound((c) => {

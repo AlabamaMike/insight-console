@@ -20,6 +20,11 @@ export interface Env {
 
   // Environment variables
   ENVIRONMENT: 'development' | 'production';
+
+  // Email service (optional, for production)
+  RESEND_API_KEY?: string;
+  FROM_EMAIL?: string;
+  FRONTEND_URL: string;
 }
 
 /**

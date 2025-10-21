@@ -1,0 +1,30 @@
+name = "insight-console-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Development environment
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Production environment
+[env.production]
+vars = { ENVIRONMENT = "production" }
+r2_buckets = [
+  { binding = "DOCUMENTS", bucket_name = "insight-console-docs-prod" }
+]
+kv_namespaces = [
+  { binding = "SESSIONS", id = "your-kv-namespace-id" }
+]
+hyperdrive = [
+  { binding = "DATABASE", id = "your-hyperdrive-id" }
+]
+
+# Secrets (configured via wrangler secret put)
+# DATABASE_URL - PostgreSQL connection string
+# ANTHROPIC_API_KEY - API key for Claude
+# JWT_SECRET - Secret for signing JWTs
+# ENCRYPTION_KEY - Key for encrypting sensitive data
+
+[observability]
+enabled = true
+head_sampling_rate = 1

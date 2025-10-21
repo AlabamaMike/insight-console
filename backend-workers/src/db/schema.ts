@@ -3,7 +3,7 @@
  * Provides type-safe database schema for PostgreSQL via Neon
  */
 
-import { pgTable, serial, varchar, text, integer, timestamp, boolean, jsonb, bigint, inet, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, text, integer, timestamp, boolean, jsonb, bigint, inet, pgEnum, index } from 'drizzle-orm/pg-core';
 import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
 /**
@@ -12,9 +12,8 @@ import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  hashed_password: varchar('hashed_password', { length: 255 }).notNull(),
-  full_name: varchar('full_name', { length: 255 }).notNull(),
-  firm_id: varchar('firm_id', { length: 100 }).notNull(),
+  full_name: varchar('full_name', { length: 255 }),
+  firm_id: varchar('firm_id', { length: 100 }),
   role: varchar('role', { length: 50 }).default('consultant').notNull(),
   is_active: boolean('is_active').default(true).notNull(),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -23,6 +22,24 @@ export const users = pgTable('users', {
 
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;
+
+/**
+ * Magic Link Tokens table
+ */
+export const magicLinkTokens = pgTable('magic_link_tokens', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull(),
+  token_hash: varchar('token_hash', { length: 64 }).notNull(),
+  expires_at: timestamp('expires_at', { withTimezone: true }).notNull(),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  used_at: timestamp('used_at', { withTimezone: true }),
+}, (table) => ({
+  emailIdx: index('magic_link_tokens_email_idx').on(table.email),
+  tokenHashIdx: index('magic_link_tokens_token_hash_idx').on(table.token_hash),
+}));
+
+export type MagicLinkToken = InferSelectModel<typeof magicLinkTokens>;
+export type NewMagicLinkToken = InferInsertModel<typeof magicLinkTokens>;
 
 /**
  * Deal status enum

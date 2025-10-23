@@ -7,8 +7,10 @@ import DealList from '@/components/DealList'
 import CreateDealButton from '@/components/CreateDealButton'
 import { PlusCircle } from 'lucide-react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function Home() {
+  const { user, logout } = useAuth()
   const [deals, setDeals] = useState<Deal[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -35,13 +37,26 @@ export default function Home() {
       <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              Insight Console
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              AI-Powered Private Equity Deal Analysis
-            </p>
+          <div className="mb-8 flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                Insight Console
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                AI-Powered Private Equity Deal Analysis
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                {user?.email}
+              </span>
+              <button
+                onClick={logout}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              >
+                Logout
+              </button>
+            </div>
           </div>
 
           {/* Actions */}

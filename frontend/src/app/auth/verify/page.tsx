@@ -1,57 +1,84 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { verifyMagicLink } from '@/lib/api/auth';
-import { saveAuthTokens, saveUser } from '@/lib/auth';
+import { useAuth } from '@/hooks/useAuth';
 
 function VerifyContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState(true);
+  const searchParams = useSearchParams();
+  const { login } = useAuth();
+  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const verify = async () => {
       const token = searchParams.get('token');
-      const email = searchParams.get('email');
 
-      if (!token || !email) {
-        setError('Invalid link. Missing token or email.');
-        setVerifying(false);
+      if (!token) {
+        setStatus('error');
+        setError('Invalid or missing token');
         return;
       }
 
       try {
-        const response = await verifyMagicLink(token, email);
+        const { accessToken, refreshToken, user } = await verifyMagicLink(token);
 
-        // Save auth tokens and user data
-        saveAuthTokens(response.accessToken, response.refreshToken);
-        saveUser(response.user);
+        // Use AuthProvider's login method
+        login(accessToken, refreshToken, user);
 
-        // Redirect to dashboard
-        router.push('/');
+        setStatus('success');
+
+        // Redirect to homepage after brief delay
+        setTimeout(() => {
+          router.push('/');
+        }, 1500);
       } catch (err: any) {
-        if (err.response?.data?.error) {
-          setError(err.response.data.error);
-        } else {
-          setError('Invalid or expired link. Please request a new one.');
-        }
-        setVerifying(false);
+        setStatus('error');
+        setError(err.response?.data?.message || 'Verification failed. Please try again.');
       }
     };
 
     verify();
-  }, [searchParams, router]);
+  }, [searchParams, login, router]);
 
-  if (verifying) {
+  if (status === 'verifying') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-purple-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-purple-900 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Verifying...</h2>
-            <p className="text-gray-600">Please wait while we log you in.</p>
+            <p className="text-gray-600">Please wait while we log you in</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'success') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-purple-900 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+          <div className="text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <svg
+                className="h-6 w-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Success!</h2>
+            <p className="text-gray-600">Redirecting you to your dashboard...</p>
           </div>
         </div>
       </div>
@@ -81,9 +108,9 @@ function VerifyContent() {
           <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => router.push('/auth/login')}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
           >
-            Request a new link
+            Back to Login
           </button>
         </div>
       </div>
@@ -93,16 +120,13 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-purple-900">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading...</h2>
-          </div>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-purple-900">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
         </div>
-      </div>
-    }>
+      }
+    >
       <VerifyContent />
     </Suspense>
   );

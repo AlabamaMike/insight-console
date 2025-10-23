@@ -36,11 +36,10 @@ export async function requestMagicLink(email: string): Promise<RequestMagicLinkR
  * Verify a magic link token and get JWT tokens
  */
 export async function verifyMagicLink(
-  token: string,
-  email: string
+  token: string
 ): Promise<VerifyMagicLinkResponse> {
   const response = await axios.get(`${API_BASE_URL}/auth/verify-magic-link`, {
-    params: { token, email },
+    params: { token },
   });
   return response.data;
 }

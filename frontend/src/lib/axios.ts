@@ -2,6 +2,13 @@ import axios from 'axios';
 import { getAccessToken, getRefreshToken, saveAuthTokens, clearAuth } from './auth';
 import { refreshAccessToken } from './api/auth';
 
+// Add TypeScript module augmentation for _retry property
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787';
 
 // Create axios instance
@@ -82,17 +89,17 @@ axiosInstance.interceptors.response.use(
         const { accessToken } = await refreshAccessToken(refreshToken);
         saveAuthTokens(accessToken, refreshToken);
 
-        // Process queued requests
-        processQueue(null, accessToken);
+        // Reset flag before processing queue to prevent race condition
         isRefreshing = false;
+        processQueue(null, accessToken);
 
         // Retry the original request with new token
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, clear queue and redirect to login
-        processQueue(refreshError, null);
+        // Refresh failed, reset flag before processing queue
         isRefreshing = false;
+        processQueue(refreshError, null);
         clearAuth();
         if (typeof window !== 'undefined') {
           window.location.href = '/auth/login';

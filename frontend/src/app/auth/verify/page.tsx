@@ -15,15 +15,16 @@ function VerifyContent() {
   useEffect(() => {
     const verify = async () => {
       const token = searchParams.get('token');
+      const email = searchParams.get('email');
 
-      if (!token) {
+      if (!token || !email) {
         setStatus('error');
-        setError('Invalid or missing token');
+        setError('Invalid or missing verification link');
         return;
       }
 
       try {
-        const { accessToken, refreshToken, user } = await verifyMagicLink(token);
+        const { accessToken, refreshToken, user } = await verifyMagicLink(token, email);
 
         // Use AuthProvider's login method
         login(accessToken, refreshToken, user);

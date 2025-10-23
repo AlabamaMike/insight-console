@@ -1,14 +1,14 @@
 name = "insight-console-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
-
+account_id = "2c8f3a64dd5631d1574e7ed44f5facf2"
 # Development environment
 [env.development]
 vars = { ENVIRONMENT = "development", FRONTEND_URL = "http://localhost:3000" }
 
 # Production environment
 [env.production]
-vars = { ENVIRONMENT = "production" }
+vars = { ENVIRONMENT = "production", FRONTEND_URL = "https://dealinsights.ai" }
 r2_buckets = [
   { binding = "DOCUMENTS", bucket_name = "insight-console-docs-prod" }
 ]
